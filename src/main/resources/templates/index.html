@@ -11,7 +11,7 @@
                 var json = JSON.parse(e.data);
                 document.getElementById("result").innerHTML += json.message + "<br>";
             }, false);
-			source.onopen = function (event) { console.log("open",event.currentTarget.url);}
+			source.onopen = function (event) { console.log("open",event.currentTarget.url);};
 			source.onerror = function (error) {console.log("error",error);}
 		} else {
 		    alert("tu navegador no admite SSE");
