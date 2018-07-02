@@ -1,28 +1,50 @@
 package z.reactivesse.services
 
+import io.reactivex.Observer
+import io.reactivex.disposables.Disposable
+import io.reactivex.subjects.PublishSubject
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
-import org.springframework.http.codec.ServerSentEvent
-import reactor.core.publisher.EmitterProcessor
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import z.reactivesse.models.Message
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
 import java.time.LocalDateTime
+import javax.servlet.http.HttpServletRequest
 
 
 @Service
 class StreamService {
-    private val emitter = EmitterProcessor.create<ServerSentEvent<Message>>()
-    //TODO volver a SseEmitter
+    private val emitter = PublishSubject.create<Message>()
 
-    fun getInfiniteMessages(): Flux<ServerSentEvent<Message>> = emitter.log().doOnSubscribe { println("sub: ${it.toMono()}") }.doOnError { println("error: ${it.message}") }.doOnTerminate { println("terminate") }.doOnCancel { println("cancel") }.doOnComplete { println("complete") }
+    fun subscribe(serverSendEventEmitter: SseEmitter,request: HttpServletRequest,topic:String){
+        emitter.filter { it.topic==topic }.safeSubscribe(createObserver(sse = serverSendEventEmitter, request = request))
+    }
 
-    fun insert(message: Message): Mono<Message> {
-        emitter.onNext(ServerSentEvent.builder<Message>()
-                .id(LocalDateTime.now().toString())
-                .event("new message")
-                .data(message)
-                .build())
-        return message.toMono()
+    fun insert(message: Message): Message = message.apply { emitter.onNext(this) }
+
+    private fun createObserver(sse: SseEmitter,request: HttpServletRequest): Observer<Message> {
+        return object : Observer<Message> {
+            override fun onNext(value: Message) {
+                println("${request.remoteAddr}:${request.remotePort} onNext value : $value")
+                try{
+                    sse.send(SseEmitter.event().apply {
+                        id(LocalDateTime.now().toString())
+                        data(value, MediaType.APPLICATION_JSON)
+                        name("new message")
+                    })
+                }catch (ise:IllegalStateException){println("error: ${ise.message}")}
+            }
+
+            override fun onSubscribe(d: Disposable) {
+                println("onSubscribe: ${request.remoteAddr}:${request.remotePort}")
+            }
+
+            override fun onError(e: Throwable) {
+                println("${request.remoteAddr}:${request.remotePort} onError: ${e.message}")
+            }
+
+            override fun onComplete() {
+                println("${request.remoteAddr}:${request.remotePort} onComplete")
+            }
+        }
     }
 }

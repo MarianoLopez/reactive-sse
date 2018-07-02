@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>SSE test</title>
+	<script type="text/javascript" th:inline="javascript">
+		if(typeof(EventSource) !== "undefined") {
+            var topic =/*[[${topic}]]*/ 'all';//get value from model - default value
+		    var source = new EventSource("http://localhost:8080/stream/"+topic);
+            source.addEventListener('new message', function(e) {
+                console.log(e);
+                var json = JSON.parse(e.data);
+                document.getElementById("result").innerHTML += json.message + "<br>";
+            }, false);
+			source.onopen = function (event) { console.log("open",event.currentTarget.url);}
+			source.onerror = function (error) {console.log("error",error);}
+		} else {
+		    alert("tu navegador no admite SSE");
+		}
+
+	</script>
+</head>
+<body>
+<div id="result"></div>
+</body>
+</html>
