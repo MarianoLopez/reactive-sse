@@ -1,0 +1,69 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Sample application",
+    "license": {
+      "name": "APL2"
+    }
+  },
+  "basePath": "/",
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/stream/{topic}": {
+      "get": {
+        "tags": ["get messages stream"],
+        "description": "stream",
+        "responses": {
+          "200": { "description": "stream"}
+        },
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "path",
+            "description": "topic name",
+            "required": true
+
+          }
+        ]
+      }
+    },
+    "/stream":{
+      "post": {
+        "tags": ["send message"],
+        "description": "save",
+        "consumes":["application/json"],
+        "parameters":[
+          {
+            "name":"message",
+            "in":"body",
+            "description":"sarasa",
+            "schema":{
+              "$ref": "#/definitions/Message"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Echo the request inputs"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Message": {
+      "required": ["message", "topic"],
+      "properties": {
+        "message": {"type": "string"},
+        "topic": {"type": "string"}
+      }
+    },
+    "example": {
+      "message": "Hi!",
+      "topic": "all"
+    }
+  }
+}
