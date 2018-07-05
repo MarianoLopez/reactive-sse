@@ -4,7 +4,7 @@
 	<title>SSE test</title>
 	<script type="text/javascript" th:inline="javascript">
 		if(typeof(EventSource) !== "undefined") {
-            var topic =/*[[${topic}]]*/ 'all';//get value from model - default value
+            var topic =/*[[${topic!=null?topic:'all'}]]*/ "all";//get value from model - default value
 		    var source = new EventSource("http://localhost:8080/stream/"+topic);
             source.addEventListener('new message', function(e) {
                 console.log(e);
@@ -16,7 +16,6 @@
 		} else {
 		    alert("tu navegador no admite SSE");
 		}
-
 	</script>
 </head>
 <body>
