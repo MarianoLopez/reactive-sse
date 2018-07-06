@@ -15,23 +15,20 @@ import java.time.LocalDateTime
 
 
 @Service
-class StreamService {
+class StreamService{
     private val emitter =  EmitterProcessor.create<ServerSentEvent<Message>>()
 
 
     fun subscribe(request: ServerRequest): Mono<ServerResponse> {
         val topic = request.pathVariable("topic")
-        return ok().body(emitter.filter { it.data()?.topic==topic }.log())
+        return ok().body( emitter.filter { it.data()?.topic==topic }.log())
     }
 
-    fun insert(request: ServerRequest): Mono<ServerResponse> {
-        return request.bodyToMono<Message>()
-                .doOnNext {
-                    emitter.onNext(ServerSentEvent.builder<Message>().apply {
-                        data(it)
-                        id(LocalDateTime.now().toString())
-                        event("new message")
-                    }.build())
-                }.flatMap { ok().body(it.toMono()) }
+    fun insert(message: Message){
+        emitter.onNext(ServerSentEvent.builder<Message>().apply {
+            data(message)
+            id(LocalDateTime.now().toString())
+            event("new message")
+        }.build())
     }
 }

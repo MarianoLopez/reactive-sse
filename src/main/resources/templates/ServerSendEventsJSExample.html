@@ -5,7 +5,7 @@
 	<script type="text/javascript" th:inline="javascript">
 		if(typeof(EventSource) !== "undefined") {
             var topic =/*[[${topic!=null?topic:'all'}]]*/ "all";//get value from model - default value
-		    var source = new EventSource("http://localhost:8080/stream/"+topic);
+		    var source = new EventSource("http://localhost:8080/message/stream/"+topic);
             source.addEventListener('new message', function(e) {
                 console.log(e);
                 var json = JSON.parse(e.data);
